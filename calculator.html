@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="so">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FXZORA — Risk Calculator</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Share+Tech+Mono&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --green: #00FF3C;
+    --green-dim: #00cc30;
+    --green-glow: rgba(0,255,60,0.12);
+    --red: #CC0000;
+    --red-dim: #ff3333;
+    --bg: #0a0a0a;
+    --bg2: #111111;
+    --bg3: #1a1a1a;
+    --border: rgba(255,255,255,0.08);
+    --border-green: rgba(0,255,60,0.25);
+    --text: #ffffff;
+    --text-muted: rgba(255,255,255,0.45);
+    --text-dim: rgba(255,255,255,0.7);
+    --mono: 'Share Tech Mono', monospace;
+    --display: 'Bebas Neue', sans-serif;
+    --body: 'Inter', sans-serif;
+  }
+
+  html, body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--body);
+    min-height: 100vh;
+    font-size: 15px;
+  }
+
+  /* HEADER */
+  header {
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 56px;
+  }
+  .logo {
+    font-family: var(--display);
+    font-size: 26px;
+    letter-spacing: 0.08em;
+    color: var(--green);
+  }
+  .logo span { color: rgba(255,255,255,0.4); font-size: 13px; font-family: var(--mono); letter-spacing: 0.1em; margin-left: 10px; vertical-align: middle; }
+  .badge {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--green);
+    border: 1px solid var(--border-green);
+    padding: 4px 12px;
+    border-radius: 100px;
+    letter-spacing: 0.05em;
+  }
+
+  /* LAYOUT */
+  main {
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 2.5rem 1.5rem 4rem;
+  }
+
+  .page-title {
+    font-family: var(--display);
+    font-size: 48px;
+    letter-spacing: 0.04em;
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+  .page-title span { color: var(--green); }
+  .page-sub {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text-muted);
+    letter-spacing: 0.08em;
+    margin-bottom: 2.5rem;
+  }
+
+  /* SECTION */
+  .section {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.25rem;
+  }
+  .section-title {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--green);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* INPUTS */
+  .inputs-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+  @media (max-width: 540px) { .inputs-grid { grid-template-columns: 1fr; } }
+
+  .field { display: flex; flex-direction: column; gap: 8px; }
+  .field label {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-family: var(--mono);
+    letter-spacing: 0.06em;
+  }
+
+  input[type=number] {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 18px;
+    padding: 10px 14px;
+    width: 100%;
+    transition: border-color 0.15s;
+    outline: none;
+  }
+  input[type=number]:focus { border-color: var(--green); }
+  input[type=number]::-webkit-inner-spin-button { opacity: 0.3; }
+
+  .slider-row { display: flex; align-items: center; gap: 12px; }
+  input[type=range] {
+    -webkit-appearance: none;
+    flex: 1;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--bg3);
+    outline: none;
+    cursor: pointer;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--green);
+    cursor: pointer;
+    transition: transform 0.1s;
+  }
+  input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.2); }
+  input[type=range]::-moz-range-thumb {
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: var(--green);
+    border: none;
+    cursor: pointer;
+  }
+  .slider-val {
+    font-family: var(--mono);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--green);
+    min-width: 56px;
+    text-align: right;
+  }
+
+  /* CARDS */
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 10px;
+  }
+  .card {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    transition: border-color 0.2s;
+  }
+  .card .clabel {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .card .cval {
+    font-family: var(--mono);
+    font-size: 20px;
+    font-weight: 600;
+  }
+  .card.g { border-color: var(--border-green); }
+  .card.g .cval { color: var(--green); }
+  .card.r .cval { color: var(--red-dim); }
+  .card.b .cval { color: #4da6ff; }
+  .card.p .cval { color: #b07fff; }
+
+  /* TABLE */
+  .table-wrap { overflow-x: auto; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--mono);
+    font-size: 13px;
+  }
+  th {
+    text-align: left;
+    padding: 8px 12px;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--border);
+  }
+  td {
+    padding: 10px 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    color: var(--text-dim);
+  }
+  tr:last-child td { border-bottom: none; }
+  tr.total td {
+    border-top: 1px solid var(--border-green);
+    color: var(--text);
+    font-weight: 600;
+  }
+  td.pos { color: var(--green); }
+  td.neg { color: var(--red-dim); }
+  td.hi { color: var(--text); font-weight: 600; }
+
+  /* MINDSET BOX */
+  .mindset {
+    border: 1px solid var(--border-green);
+    border-radius: 12px;
+    padding: 1.5rem;
+    background: var(--green-glow);
+    margin-bottom: 1.25rem;
+  }
+  .mindset .mtitle {
+    font-family: var(--display);
+    font-size: 22px;
+    color: var(--green);
+    letter-spacing: 0.06em;
+    margin-bottom: 1rem;
+  }
+  .rules { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+  .rules li {
+    font-size: 13px;
+    color: var(--text-dim);
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    line-height: 1.5;
+  }
+  .rules li::before {
+    content: '▸';
+    color: var(--green);
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  /* FOOTER */
+  footer {
+    text-align: center;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-muted);
+    padding: 2rem 0 1rem;
+    letter-spacing: 0.08em;
+  }
+  footer span { color: var(--green); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">FXZORA <span>RISK CALCULATOR</span></div>
+  <div class="badge">MY MINDSET</div>
+</header>
+
+<main>
+  <h1 class="page-title">RISK <span>XISAAB</span></h1>
+  <p class="page-sub">GALI ACCOUNT-KAAGA — XISAABTA OO DHAN WAY IS BEDELAYSAA</p>
+
+  <!-- INPUTS -->
+  <div class="section">
+    <div class="section-title">Xogta galinta</div>
+    <div class="inputs-grid">
+      <div class="field">
+        <label>Account Balance ($)</label>
+        <input type="number" id="account" value="1000" min="1" step="1" oninput="calc()">
+      </div>
+      <div class="field">
+        <label>Risk Per Trade (%)</label>
+        <div class="slider-row">
+          <input type="range" id="riskPct" min="0.1" max="5" step="0.1" value="1" oninput="document.getElementById('riskPctVal').textContent=parseFloat(this.value).toFixed(1)+'%'; calc()">
+          <span class="slider-val" id="riskPctVal">1.0%</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>RR Target (Wins)</label>
+        <div class="slider-row">
+          <input type="range" id="rr" min="1" max="10" step="0.5" value="3" oninput="document.getElementById('rrVal').textContent=parseFloat(this.value).toFixed(1)+'R'; calc()">
+          <span class="slider-val" id="rrVal">3.0R</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>Tirada Wins / isbuuc</label>
+        <div class="slider-row">
+          <input type="range" id="wins" min="0" max="10" step="1" value="3" oninput="document.getElementById('winsVal').textContent=this.value; calc()">
+          <span class="slider-val" id="winsVal">3</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>Tirada Losses / isbuuc</label>
+        <div class="slider-row">
+          <input type="range" id="losses" min="0" max="10" step="1" value="3" oninput="document.getElementById('lossesVal').textContent=this.value; calc()">
+          <span class="slider-val" id="lossesVal">3</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WEEKLY SUMMARY -->
+  <div class="section">
+    <div class="section-title">Isbuuciga — natiijada</div>
+    <div class="cards" id="cards"></div>
+  </div>
+
+  <!-- 4 WEEK TABLE -->
+  <div class="section">
+    <div class="section-title">4 Isbuuc — projection</div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Isbuuc</th>
+            <th>Trades</th>
+            <th>Wins</th>
+            <th>Losses</th>
+            <th>Faida</th>
+            <th>Khasaaro</th>
+            <th>Net</th>
+            <th>Balance</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- MONTHLY SUMMARY -->
+  <div class="section">
+    <div class="section-title">Bishii oo dhan — kooban</div>
+    <div class="cards" id="monthly-cards"></div>
+  </div>
+
+  <!-- MINDSET RULES -->
+  <div class="mindset">
+    <div class="mtitle">XEERARKA MUHIIMKA AH</div>
+    <ul class="rules">
+      <li>Focus 1 session keliya — ha kala foorsan (Asian / Pre-NY)</li>
+      <li>1–2 trade per day — xad ha ka bixin</li>
+      <li>Win hadu kuuso hormaro → No more trades maalintaas</li>
+      <li>Loss hadu so hormaro → Second chance raadi, use fixed risk</li>
+      <li>No Revenge Trading — hadi first trade SL noqoto, second chance siiso oo all rules kula raadiso</li>
+      <li>Fixed Risk Management — % keligood weligood ha beddelin</li>
+    </ul>
+  </div>
+</main>
+
+<footer>
+  <span>FXZORA</span> · Somali Forex Education · Risk Calculator v1.0
+</footer>
+
+<script>
+function fmt(n) { return n.toFixed(2); }
+
+function calc() {
+  const account = parseFloat(document.getElementById('account').value) || 0;
+  const riskPct = parseFloat(document.getElementById('riskPct').value);
+  const rr      = parseFloat(document.getElementById('rr').value);
+  const wins    = parseInt(document.getElementById('wins').value);
+  const losses  = parseInt(document.getElementById('losses').value);
+
+  const riskAmt   = account * riskPct / 100;
+  const winAmt    = riskAmt * rr;
+  const lossAmt   = riskAmt;
+  const totalTrades = wins + losses;
+  const winRate   = totalTrades > 0 ? Math.round(wins / totalTrades * 100) : 0;
+
+  const weekProfit = winAmt * wins;
+  const weekLoss   = lossAmt * losses;
+  const weekNet    = weekProfit - weekLoss;
+  const weekNetPct = account > 0 ? (weekNet / account * 100).toFixed(2) : '0.00';
+
+  document.getElementById('cards').innerHTML = `
+    <div class="card">
+      <div class="clabel">Risk / trade</div>
+      <div class="cval">$${fmt(riskAmt)}</div>
+    </div>
+    <div class="card g">
+      <div class="clabel">Win amount</div>
+      <div class="cval">+$${fmt(winAmt)}</div>
+    </div>
+    <div class="card r">
+      <div class="clabel">Loss amount</div>
+      <div class="cval">-$${fmt(lossAmt)}</div>
+    </div>
+    <div class="card ${weekNet >= 0 ? 'g' : 'r'}">
+      <div class="clabel">Net / isbuuc</div>
+      <div class="cval">${weekNet >= 0 ? '+' : ''}$${fmt(weekNet)}</div>
+    </div>
+    <div class="card b">
+      <div class="clabel">Win rate</div>
+      <div class="cval">${winRate}%</div>
+    </div>
+    <div class="card p">
+      <div class="clabel">Net %</div>
+      <div class="cval">${weekNet >= 0 ? '+' : ''}${weekNetPct}%</div>
+    </div>
+  `;
+
+  let tbody = '';
+  let runBal = account;
+  let totProfit = 0, totLoss = 0, totNet = 0;
+
+  for (let w = 1; w <= 4; w++) {
+    const wP = winAmt * wins;
+    const wL = lossAmt * losses;
+    const wN = wP - wL;
+    runBal  += wN;
+    totProfit += wP;
+    totLoss   += wL;
+    totNet    += wN;
+
+    tbody += `<tr>
+      <td style="color:var(--text-muted);">Week ${w}</td>
+      <td>${totalTrades}</td>
+      <td class="pos">${wins}</td>
+      <td class="neg">${losses}</td>
+      <td class="pos">+$${fmt(wP)}</td>
+      <td class="neg">-$${fmt(wL)}</td>
+      <td class="${wN >= 0 ? 'pos' : 'neg'}">${wN >= 0 ? '+' : ''}$${fmt(wN)}</td>
+      <td class="hi">$${fmt(runBal)}</td>
+    </tr>`;
+  }
+
+  document.getElementById('tbody').innerHTML = tbody;
+
+  const monthNetPct = account > 0 ? (totNet / account * 100).toFixed(2) : '0.00';
+
+  document.getElementById('monthly-cards').innerHTML = `
+    <div class="card g">
+      <div class="clabel">Faida oo dhan</div>
+      <div class="cval">+$${fmt(totProfit)}</div>
+    </div>
+    <div class="card r">
+      <div class="clabel">Khasaaro oo dhan</div>
+      <div class="cval">-$${fmt(totLoss)}</div>
+    </div>
+    <div class="card ${totNet >= 0 ? 'g' : 'r'}">
+      <div class="clabel">Net bishii</div>
+      <div class="cval">${totNet >= 0 ? '+' : ''}$${fmt(totNet)}</div>
+    </div>
+    <div class="card b">
+      <div class="clabel">Balance dhamaadka</div>
+      <div class="cval">$${fmt(runBal)}</div>
+    </div>
+    <div class="card p">
+      <div class="clabel">% Growth</div>
+      <div class="cval">${totNet >= 0 ? '+' : ''}${monthNetPct}%</div>
+    </div>
+  `;
+}
+
+calc();
+</script>
+</body>
+</html>
